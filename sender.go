@@ -60,6 +60,7 @@ func (s *sender) SetSize(n int64) {
 type DataStream struct {
 	Source map[string]int64
 	Status map[string]bool
+	File   map[string]string
 	SLock  sync.Mutex
 }
 
@@ -268,4 +269,5 @@ func init() {
 	Stream = new(DataStream)
 	Stream.Source = make(map[string]int64)
 	Stream.Status = make(map[string]bool)
+	Stream.File = make(map[string]string)
 }
