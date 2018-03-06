@@ -268,6 +268,5 @@ func (s *sender) abort(err error) error {
 func init() {
 	Stream = new(DataStream)
 	Stream.Source = make(map[string]int64)
-	Stream.Status = make(map[string]bool)
 	Stream.File = make(map[string]string)
 }
