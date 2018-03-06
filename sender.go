@@ -6,9 +6,10 @@ import (
 	"io"
 	"net"
 	"strconv"
+	"sync"
 	"time"
 
-	"github.com/pin/tftp/netascii"
+	"github.com/Intrising/tftp/netascii"
 )
 
 // OutgoingTransfer provides methods to set the outgoing transfer size and
@@ -56,7 +57,22 @@ func (s *sender) SetSize(n int64) {
 	}
 }
 
+type DataStream struct {
+	Source map[string]int64
+	Status map[string]bool
+	SLock  sync.Mutex
+}
+
+var Stream *DataStream
+
+func (s *sender) sendSize(ip string, size int64) {
+	Stream.SLock.Lock()
+	Stream.Source[ip] = size
+	Stream.SLock.Unlock()
+}
+
 func (s *sender) ReadFrom(r io.Reader) (n int64, err error) {
+
 	if s.mode == "netascii" {
 		r = netascii.ToReader(r)
 	}
@@ -94,6 +110,10 @@ func (s *sender) ReadFrom(r io.Reader) (n int64, err error) {
 	for {
 		l, err := io.ReadFull(r, s.send[4:])
 		n += int64(l)
+
+		/* transmit bytes data */
+		go s.sendSize(s.RemoteAddr().IP.String(), n)
+
 		if err != nil && err != io.ErrUnexpectedEOF {
 			if err == io.EOF {
 				binary.BigEndian.PutUint16(s.send[2:4], s.block)
@@ -242,4 +262,10 @@ func (s *sender) abort(err error) error {
 	s.conn.Close()
 	s.conn = nil
 	return nil
+}
+
+func init() {
+	Stream = new(DataStream)
+	Stream.Source = make(map[string]int64)
+	Stream.Status = make(map[string]bool)
 }
