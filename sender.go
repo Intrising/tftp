@@ -61,6 +61,7 @@ type DataStream struct {
 	Source   map[string]int64
 	Progress map[string]int
 	File     map[string]string
+	Status   map[string]byte
 	SLock    sync.Mutex
 }
 
@@ -70,6 +71,7 @@ func (s *sender) sendSize(ip string, size int64) {
 	Stream.SLock.Lock()
 	Stream.Source[ip] = size
 	Stream.SLock.Unlock()
+	time.Sleep(time.Second * 1)
 }
 
 func (s *sender) ReadFrom(r io.Reader) (n int64, err error) {
@@ -270,4 +272,5 @@ func init() {
 	Stream.Source = make(map[string]int64)
 	Stream.Progress = make(map[string]int)
 	Stream.File = make(map[string]string)
+	Stream.Status = make(map[string]byte)
 }
