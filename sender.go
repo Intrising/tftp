@@ -68,9 +68,9 @@ type DataStream struct {
 var Stream *DataStream
 
 func (s *sender) sendSize(ip string, size int64) {
+        defer Stream.SLock.Unlock()
 	Stream.SLock.Lock()
 	Stream.Source[ip] = size
-	Stream.SLock.Unlock()
 	time.Sleep(time.Second * 1)
 }
 
